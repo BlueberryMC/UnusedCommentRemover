@@ -7,8 +7,7 @@ import kotlin.system.exitProcess
 
 val utf8 = charset("UTF-8")
 
-// A simple application that removes unneeded comments from decompiler
-// also removes useless '(Object)' cast which is incorrect most of the time
+// removes useless '(Object)' cast which is incorrect most of the time
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
         println("Usage: <target directory>")
@@ -24,42 +23,18 @@ fun main(args: Array<String>) {
         }
         if (!file.name.endsWith(".java")) return@forEach
         val lines = file.readLines(charset) as MutableList<String>
-        // Procyon decompiler
-        if (lines[0].startsWith("// ") && lines[1].startsWith("// Decompiled") && lines[2].startsWith("// ")) {
-            println("${file.path}: Procyon Decompiler (${lines[1]})")
-            // 4 lines long, so remove index 0 for 4 times
-            lines.removeAt(0)
-            lines.removeAt(0)
-            lines.removeAt(0)
-            lines.removeAt(0)
-            file.write(lines)
-            return@forEach
-        }
-        // CFR decompiler
-        if (lines[0].startsWith("/*")) {
-            val start = 0
-            var end = -1
-            var l = 0
-            for (s in lines) {
-                if (s.startsWith(" */") || s.endsWith("*/")) {
-                    end = l
-                    break
-                }
-                l++
-            }
-            println("${file.path}: CFR Decompiler (${lines[1]}, range: $start - $end)")
-            if (end == -1) {
-                System.err.println("WARNING: ${file.path} is corrupted.")
-                return@forEach
-            }
-            for (i in start..end) {
-                lines.removeAt(0)
-            }
-            file.write(lines)
-        }
+        file.write(lines)
     }
 }
 
+fun String.postProcessRemoveCast() = this
+    .replace("(Object)")
+    .replace("(Object[])")
+
+fun String.replace(text: String) = this.replace(text, "")
+
 fun File.write(lines: List<String>) {
-    this.writeText(lines.joinToString("\r\n").replace("\\(Object\\)".toRegex(), ""), utf8)
+    val text = lines.joinToString("\r\n")
+        .postProcessRemoveCast()
+    this.writeText(text, utf8)
 }
