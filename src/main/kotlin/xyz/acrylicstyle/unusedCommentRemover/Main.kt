@@ -74,6 +74,9 @@ fun String.convertCharacters() = this
     .replace("\uff82\uff67", "\\u00a7")
     .replace("\u95e2\ufffd", "\\u84c0")
     .replace("return \"max\".equals(s2) ? '\u95a0\ufffd' : '\u95a0\ufffd';", "return \"max\".equals(s2) ? '\\u8008' : '\\u8006';")
+    // Fix inconsistency between platforms (e.g. Windows vs. Linux)
+    // For some reason, Windows does "\\u00a7" but Linux (tested on ubuntu 20.04) does "\u00a7"
+    .replace("\u00a7", "\\u00a7")
 
 fun String.replace(text: String) = this.replace(text, "")
 
