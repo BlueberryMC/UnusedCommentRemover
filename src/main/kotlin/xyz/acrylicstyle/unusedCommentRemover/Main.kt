@@ -48,11 +48,30 @@ fun String.convertCasts() = this
     .replace("(Predicate)")
 
 fun String.doType() = this
-    .replace("new StartAttacking(", "new StartAttacking<>(")
+    .replace("new BabyFollowAdult(", "new BabyFollowAdult<>(")
+    .replace("new BackUpIfTooClose(", "new BackUpIfTooClose<>(")
+    .replace("new CrossbowAttack()", "new CrossbowAttack<>()")
+    .replace("new DismountOrSkipMounting(", "new DismountOrSkipMounting<>(")
+    .replace("new EraseMemoryIf(", "new EraseMemoryIf<>(")
+    .replace("new GoToCelebrateLocation(", "new GoToCelebrateLocation<>(")
+    .replace("new GoToWantedItem(", "new GoToWantedItem<>(")
+    .replace("new LongJumpToRandomPos(", "new LongJumpToRandomPos<>(")
+    .replace("new Mount(", "new Mount<>(")
+    .replace("new PrepareRamNearestTarget(", "new PrepareRamNearestTarget<>(")
+    .replace("new RamTarget(", "new RamTarget<>(")
+    .replace("new RememberIfHoglinWasKilled()", "new RememberIfHoglinWasKilled<>()")
     .replace("new RunOne(", "new RunOne<>(")
-    .replace("new StopAttackingIfTargetInvalid()", "new StopAttackingIfTargetInvalid<>()")
+    .replace("new RunIf(", "new RunIf<>(")
+    .replace("new StopHoldingItemIfNoLongerAdmiring()", "new StopHoldingItemIfNoLongerAdmiring<>()")
+    .replace("new StopAttackingIfTargetInvalid(", "new StopAttackingIfTargetInvalid<>(")
+    .replace("new StopBeingAngryIfTargetDead()", "new StopBeingAngryIfTargetDead<>()")
+    .replace("new StopAdmiringIfTiredOfTryingToReachItem(", "new StopAdmiringIfTiredOfTryingToReachItem<>(")
+    .replace("new StartAttacking(", "new StartAttacking<>(")
+    .replace("new StartAdmiringItemIfSeen(", "new StartAdmiringItemIfSeen<>(")
+    .replace("new StartHuntingHoglin()", "new StartHuntingHoglin<>()")
 
 fun String.convertCharacters() = this
+    .replace("\uff82\uff67", "\\u00a7")
     .replace("\u95e2\ufffd", "\\u84c0")
     .replace("return \"max\".equals(s2) ? '\u95a0\ufffd' : '\u95a0\ufffd';", "return \"max\".equals(s2) ? '\\u8008' : '\\u8006';")
 
