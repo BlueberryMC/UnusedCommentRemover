@@ -74,6 +74,7 @@ fun String.convertCharacters() = this
     .replace("\ufffd\uff7f\uff7d", "\\ufffd") // 65533
     .replace("\uff82\uff67", "\\u00a7") // 167
     .replace("\u95e2\ufffd", "\\u84c0") // 33984
+    .replace("return i2 & 255 | (i & 32767) << 8 | (i3 & 32767) << 24 | (i < 0 ? Integer.MIN_VALUE : 0) | (i3 < 0 ? '\u95a0\ufffd' : 0);", "return i2 & 255 | (i & 32767) << 8 | (i3 & 32767) << 24 | (i < 0 ? Integer.MIN_VALUE : 0) | (i3 < 0 ? 32768 : 0);")
     .replace("return \"max\".equals(s2) ? '\u95a0\ufffd' : '\u95a0\ufffd';", "return \"max\".equals(s2) ? '\\u8008' : '\\u8006';") // 32776, 32774
     // Fix inconsistency between platforms (e.g. Windows vs. Linux)
     // For some reason, Windows does "\\u00a7" but Linux (tested on ubuntu 20.04) does "\u00a7"
