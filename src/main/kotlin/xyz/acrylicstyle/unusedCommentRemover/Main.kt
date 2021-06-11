@@ -27,13 +27,30 @@ fun main(args: Array<String>) {
     }
 }
 
-fun String.postProcessRemoveCast() = this
+fun String.convertCasts() = this
     .replace("(Object)")
     .replace("(Object[])")
     .replace("(List)")
     .replace("(Consumer)")
     .replace("(Function)")
     .replace("(Optional)")
+    .replace("(Set)")
+    .replace("(Supplier)")
+    .replace("(DataResult)")
+    .replace("(Codec)")
+    .replace("(CompletableFuture)")
+    .replace("(Long2ObjectLinkedOpenHashMap)")
+    .replace("(Collection)")
+    .replace("(Pair)")
+    .replace("(Dynamic)")
+    .replace("(Typed)")
+    .replace("(BiConsumer)")
+    .replace("(Predicate)")
+
+fun String.doType() = this
+    .replace("new StartAttacking(", "new StartAttacking<>(")
+    .replace("new RunOne(", "new RunOne<>(")
+    .replace("new StopAttackingIfTargetInvalid()", "new StopAttackingIfTargetInvalid<>()")
 
 fun String.convertCharacters() = this
     .replace("\u95e2\ufffd", "\\u84c0")
@@ -43,7 +60,8 @@ fun String.replace(text: String) = this.replace(text, "")
 
 fun File.write(lines: List<String>) {
     val text = lines.joinToString("\r\n")
-        .postProcessRemoveCast()
+        .convertCasts()
         .convertCharacters()
+        .doType()
     this.writeText(text, utf8)
 }
