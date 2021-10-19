@@ -7,7 +7,6 @@ import kotlin.system.exitProcess
 
 val utf8 = charset("UTF-8")
 
-// removes useless '(Object)' cast which is incorrect most of the time
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
         println("Usage: <target directory>")
@@ -83,12 +82,60 @@ fun String.convertCharacters() = this
     .replace("\ufffd", "\\ufffd") // 65533
     .replace("\u2603", "\\u2603") // 9731 // DirectoryLock.java
 
+val recordRegex = "(.*?)final class (.*?) extends Record(.*?)".toRegex()
+val fieldRegex = "\\s*private final (.*?) (.*?);".toRegex()
+val uselessMethodRegex = "\\s*public final (String|int|boolean) (equals|hashCode|toString)\\((Object .+?)?\\) \\{\\n\\s*return this\\.(equals|hashCode|toString)<invokedynamic>\\(this(, object)?\\);\\n\\s*}".toRegex()
+
+fun String.convertRecord(): String {
+    if (this.lines().all { !recordRegex.matches(it) }) return this
+    val fields = mutableListOf<String>()
+    this.lines().forEach { s ->
+        if (fieldRegex.matches(s)) {
+            fields.add(s.replace(fieldRegex, "$1 $2"))
+        }
+    }
+    val cn = recordRegex.find(this)!!.groupValues[2]
+    var s = this
+        .replace(recordRegex, "$1record $2(${fields.joinToString(", ")})$3")
+        .replace(fieldRegex)
+        .replace(uselessMethodRegex)
+        .replace("\\s*public $cn\\(.+?\\)\\s?\\{[\\s\\S]+?}".toRegex())
+    var nests = 0
+    var newLines = 1
+    s = s.lines().mapNotNull {
+        if (it.contains("{")) nests++
+        if (it.contains("}")) nests--
+        if (it.isBlank()) {
+            newLines++
+        } else {
+            newLines = 1
+        }
+        if (nests <= 0) {
+            nests = 0
+            newLines = 1
+        }
+        if (newLines >= 2) {
+            null
+        } else {
+            it
+        }
+    }.joinToString("\r\n")
+    fields.forEach { field ->
+        s = s.replace("\\s*public $field\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
+    }
+    return s
+}
+
 fun String.replace(text: String) = this.replace(text, "")
+fun String.replace(regex: Regex) = this.replace(regex, "")
 
 fun File.write(lines: List<String>) {
     val text = lines.joinToString("\r\n")
         .convertCasts()
         .convertCharacters()
         .doType()
+        .convertRecord()
+        .lines()
+        .joinToString("\r\n") // make sure line terminators are \r\n (CRLF)
     this.writeText(text, utf8)
 }
