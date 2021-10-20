@@ -46,6 +46,7 @@ fun String.convertCasts() = this
     .replace("(Typed)")
     .replace("(BiConsumer)")
     .replace("(Predicate)")
+    .replace("(Map)")
 
 fun String.doType() = this
     .replace("new BabyFollowAdult(", "new BabyFollowAdult<>(")
@@ -101,26 +102,6 @@ fun String.convertRecord(): String {
         .replace(fieldRegex)
         .replace(uselessMethodRegex)
         .replace("\\s*public $cn\\(.+?\\)\\s?\\{[\\s\\S]+?}".toRegex())
-    var nests = 0
-    var newLines = 1
-    s = s.lines().mapNotNull {
-        if (it.contains("{")) nests++
-        if (it.contains("}")) nests--
-        if (it.isBlank()) {
-            newLines++
-        } else {
-            newLines = 1
-        }
-        if (nests <= 0) {
-            nests = 0
-            newLines = 1
-        }
-        if (newLines >= 2) {
-            null
-        } else {
-            it
-        }
-    }.joinToString("\r\n")
     fields.forEach { field ->
         s = s.replace("\\s*public ${Pattern.quote(field)}\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
     }

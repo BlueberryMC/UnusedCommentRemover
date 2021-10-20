@@ -16,11 +16,9 @@ public final class RecordClass extends Record {
     public final String toString() {
         return this.toString<invokedynamic>(this);
     }
-
     public final int hashCode() {
         return this.hashCode<invokedynamic>(this);
     }
-
     public final boolean equals(Object object) {
         return this.equals<invokedynamic>(this, object);
     }
