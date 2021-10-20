@@ -3,6 +3,7 @@ package xyz.acrylicstyle.unusedCommentRemover
 
 import xyz.acrylicstyle.unusedCommentRemover.util.OS
 import java.io.File
+import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
 val utf8 = charset("UTF-8")
@@ -90,7 +91,7 @@ fun String.convertRecord(): String {
     if (this.lines().all { !recordRegex.matches(it) }) return this
     val fields = mutableListOf<String>()
     this.lines().forEach { s ->
-        if (fieldRegex.matches(s)) {
+        if (!s.contains("=") && fieldRegex.matches(s)) {
             fields.add(s.replace(fieldRegex, "$1 $2"))
         }
     }
@@ -121,7 +122,7 @@ fun String.convertRecord(): String {
         }
     }.joinToString("\r\n")
     fields.forEach { field ->
-        s = s.replace("\\s*public $field\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
+        s = s.replace("\\s*public ${Pattern.quote(field)}\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
     }
     return s
 }

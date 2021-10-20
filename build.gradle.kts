@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle"
-version = "1.0.8"
+version = "1.0.8a"
 
 repositories {
     mavenCentral()
