@@ -16,9 +16,11 @@ public final class RecordClass extends Record {
     public final String toString() {
         return this.toString<invokedynamic>(this);
     }
+
     public final int hashCode() {
         return this.hashCode<invokedynamic>(this);
     }
+
     public final boolean equals(Object object) {
         return this.equals<invokedynamic>(this, object);
     }
@@ -29,5 +31,27 @@ public final class RecordClass extends Record {
 
     public int bar() {
         return this.bar;
+    }
+
+    public static final class Inner extends Record {
+        private final long fooo;
+
+        public RecordClass(long fooo) {
+            this.fooo = fooo;
+        }
+
+        public final String toString() {
+            return this.toString<invokedynamic>(this);
+        }
+        public final int hashCode() {
+            return this.hashCode<invokedynamic>(this);
+        }
+        public final boolean equals(Object object) {
+            return this.equals<invokedynamic>(this, object);
+        }
+
+        public long fooo() {
+            return this.fooo;
+        }
     }
 }

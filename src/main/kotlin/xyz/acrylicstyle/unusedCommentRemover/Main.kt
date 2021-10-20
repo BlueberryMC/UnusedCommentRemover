@@ -90,20 +90,26 @@ val uselessMethodRegex = "\\s*public final (String|int|boolean) (equals|hashCode
 
 fun String.convertRecord(): String {
     if (this.lines().all { !recordRegex.matches(it) }) return this
-    val fields = mutableListOf<String>()
+    val fields = mutableMapOf<String, MutableList<String>>()
+    val names = mutableListOf<String>()
     this.lines().forEach { s ->
+        if (recordRegex.matches(s)) {
+            recordRegex.find(s)?.groupValues?.get(2)?.let { names.add(it) }
+            fields[names.last()] = mutableListOf()
+        }
         if (!s.contains("=") && fieldRegex.matches(s)) {
-            fields.add(s.replace(fieldRegex, "$1 $2"))
+            fields[names.last()]!!.add(s.replace(fieldRegex, "$1 $2"))
         }
     }
-    val cn = recordRegex.find(this)!!.groupValues[2]
-    var s = this
-        .replace(recordRegex, "$1record $2(${fields.joinToString(", ")})$3")
-        .replace(fieldRegex)
-        .replace(uselessMethodRegex)
-        .replace("\\s*public $cn\\(.+?\\)\\s?\\{[\\s\\S]+?}".toRegex())
-    fields.forEach { field ->
-        s = s.replace("\\s*public ${Pattern.quote(field)}\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
+    var s = this.replace(fieldRegex).replace(uselessMethodRegex)
+    names.forEach { cn ->
+        s = s.replace("final class $cn extends Record", "record $cn(${fields[cn]!!.joinToString(", ")})")
+            .replace("\\s*public $cn\\(.+?\\)\\s?\\{[\\s\\S]+?}".toRegex())
+    }
+    fields.values.forEach {
+        it.forEach { field ->
+            s = s.replace("\\s*public ${Pattern.quote(field)}\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
+        }
     }
     return s
 }
