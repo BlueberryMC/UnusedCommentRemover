@@ -76,6 +76,8 @@ fun String.convertCharacters() = this
     .replace("\uff82\uff67", "\\u00a7") // 167 // StringUtil.java, ChatFormatting.java, and many more
     .replace("\u95e2\ufffd", "\\u84c0") // 33984 // EffectInstance.java, GlStateManager.java, and ShaderInstance.java
     .replace("\u7b18\ufffd", "\\u2603") // 9731 // DirectoryLock.java
+    .replace("\ufffd\u6cca", "\\ud511") // 54545 // DualNoiseProvider.java
+    .replace("\u962e\uff7a", "\\u85ba") // 34234 // DualNoiseProvider.java
     .replace("return i2 & 255 | (i & 32767) << 8 | (i3 & 32767) << 24 | (i < 0 ? Integer.MIN_VALUE : 0) | (i3 < 0 ? '\u95a0\ufffd' : 0);", "return i2 & 255 | (i & 32767) << 8 | (i3 & 32767) << 24 | (i < 0 ? Integer.MIN_VALUE : 0) | (i3 < 0 ? '\\u8000' : 0);") // Node.java
     .replace("return \"max\".equals(s2) ? '\u95a0\ufffd' : '\u95a0\ufffd';", "return \"max\".equals(s2) ? '\\u8008' : '\\u8006';") // 32776, 32774
     // Fix inconsistency between platforms (e.g. Windows vs. Linux)
