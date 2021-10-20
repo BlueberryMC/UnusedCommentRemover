@@ -85,8 +85,8 @@ fun String.convertCharacters() = this
     .replace("\u2603", "\\u2603") // 9731 // DirectoryLock.java
 
 val recordRegex = "(.*?)final class (.*?) extends Record(.*?)".toRegex()
-val fieldRegex = "\\s*private final (.*?) (.*?);".toRegex()
-val uselessMethodRegex = "\\s*public final (String|int|boolean) (equals|hashCode|toString)\\((Object .+?)?\\) \\{\\n\\s*return this\\.(equals|hashCode|toString)<invokedynamic>\\(this(, object)?\\);\\n\\s*}".toRegex()
+val fieldRegex = "(?!.*=.*)\\s*private final (.*?) (.*?);".toRegex()
+val uselessMethodRegex = "\\s*public final (String|int|boolean) (equals|hashCode|toString)\\((Object .+?)?\\) \\{\\R\\s*return this\\.(equals|hashCode|toString)<invokedynamic>\\(this(, object)?\\);\\R\\s*}".toRegex()
 
 fun String.convertRecord(): String {
     if (this.lines().all { !recordRegex.matches(it) }) return this
@@ -101,7 +101,7 @@ fun String.convertRecord(): String {
             fields[names.last()]!!.add(s.replace(fieldRegex, "$1 $2"))
         }
     }
-    var s = this.replace(fieldRegex).replace(uselessMethodRegex)
+    var s = this.replace(uselessMethodRegex)
     names.forEach { cn ->
         s = s.replace("final class $cn extends Record", "record $cn(${fields[cn]!!.joinToString(", ")})")
             .replace("\\s*public $cn\\(.+?\\)\\s?\\{[\\s\\S]+?}".toRegex())
@@ -109,6 +109,7 @@ fun String.convertRecord(): String {
     fields.values.forEach {
         it.forEach { field ->
             s = s.replace("\\s*public ${Pattern.quote(field)}\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
+                .replace("\\s*private final ${Pattern.quote(field)};".toRegex())
         }
     }
     return s
