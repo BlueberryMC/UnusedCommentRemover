@@ -94,10 +94,10 @@ fun String.convertRecord(): String {
     val names = mutableListOf<String>()
     this.lines().forEach { s ->
         if (recordRegex.matches(s)) {
-            recordRegex.find(s)?.groupValues?.get(2)?.let { names.add(it) }
+            recordRegex.find(s)?.groupValues?.get(2)?.let { names.add(it) } ?: System.err.println("Failed to find class name from line: $s")
             fields[names.last()] = mutableListOf()
         }
-        if (!s.contains("=") && fieldRegex.matches(s)) {
+        if (!s.contains("=") && fieldRegex.matches(s) && names.isNotEmpty()) {
             fields[names.last()]!!.add(s.replace(fieldRegex, "$1 $2"))
         }
     }
@@ -118,12 +118,17 @@ fun String.replace(text: String) = this.replace(text, "")
 fun String.replace(regex: Regex) = this.replace(regex, "")
 
 fun File.write(lines: List<String>) {
-    val text = lines.joinToString("\r\n")
-        .convertCasts()
-        .convertCharacters()
-        .doType()
-        .convertRecord()
-        .lines()
-        .joinToString("\r\n") // make sure line terminators are \r\n (CRLF)
-    this.writeText(text, utf8)
+    try {
+        val text = lines.joinToString("\r\n")
+            .convertCasts()
+            .convertCharacters()
+            .doType()
+            .convertRecord()
+            .lines()
+            .joinToString("\r\n") // make sure line terminators are \r\n (CRLF)
+        this.writeText(text, utf8)
+    } catch (e: Exception) {
+        System.err.println("Failed to process $path")
+        e.printStackTrace()
+    }
 }
