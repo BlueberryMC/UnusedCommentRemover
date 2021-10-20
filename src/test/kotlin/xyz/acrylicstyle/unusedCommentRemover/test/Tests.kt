@@ -10,8 +10,8 @@ class Tests {
         val src = Util.getResourceAsString("/src/RecordClass.java")
             ?: error("/src/RecordClass.java is missing")
         val expected = Util.getResourceAsString("/processed/RecordClass.java")
-            ?: error("/processed/RecorcClass.java is missing")
-        assert(src.convertRecord() == expected.lines().joinToString("\r\n")) {
+            ?: error("/processed/RecordClass.java is missing")
+        assert(src.convertRecord().lines().joinToString("\r\n") == expected.lines().joinToString("\r\n")) {
             "Expected:\n$expected\n\nActual:\n${src.convertRecord()}"
         }
     }
