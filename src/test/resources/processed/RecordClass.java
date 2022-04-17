@@ -7,5 +7,9 @@ public record RecordClass(int foo, int bar) {
     }
 
     public static record Inner(long fooo) {
+
+        public Inner() {
+            this(0L);
+        }
     }
 }

@@ -36,8 +36,12 @@ public final class RecordClass extends Record {
     public static final class Inner extends Record {
         private final long fooo;
 
-        public RecordClass(long fooo) {
+        public Inner(long fooo) {
             this.fooo = fooo;
+        }
+
+        public Inner() {
+            this(0L);
         }
 
         public final String toString() {

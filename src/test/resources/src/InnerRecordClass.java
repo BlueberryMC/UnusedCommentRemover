@@ -5,7 +5,7 @@ public class InnerRecordClass {
     private final int bar = 1;
 
     public static final class Inner extends Record {
-        private final long fooo;
+        final long fooo;
 
         public Inner(long fooo) {
             this.fooo = fooo;

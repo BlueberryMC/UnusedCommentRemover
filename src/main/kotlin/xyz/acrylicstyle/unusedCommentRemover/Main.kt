@@ -47,6 +47,8 @@ fun String.convertCasts() = this
     .replace("(BiConsumer)")
     .replace("(Predicate)")
     .replace("(Map)")
+    .replace("(BiPredicate)")
+    .replace("(BiFunction)")
 
 fun String.doType() = this
     .replace("new BabyFollowAdult(", "new BabyFollowAdult<>(")
@@ -70,6 +72,7 @@ fun String.doType() = this
     .replace("new StartAttacking(", "new StartAttacking<>(")
     .replace("new StartAdmiringItemIfSeen(", "new StartAdmiringItemIfSeen<>(")
     .replace("new StartHuntingHoglin()", "new StartHuntingHoglin<>()")
+    .replace("new NearestAttackableTargetGoal(", "new NearestAttackableTargetGoal<>(")
 
 fun String.convertCharacters() = this
     .replace("\ufffd\uff7f\uff7d", "\\ufffd") // 65533 // StringDecomposer.java
@@ -87,31 +90,34 @@ fun String.convertCharacters() = this
     .replace("\u2603", "\\u2603") // 9731 // DirectoryLock.java
 
 val recordRegex = "(.*?)final class (.*?) extends Record(.*?)".toRegex()
-val fieldRegex = "(?!.*=.*)\\s*private final (.*?) (.*?);".toRegex()
+val fieldRegex = "(?!.*=.*)\\s*(private\\s+)?final (.*?) (.*?);".toRegex()
 val uselessMethodRegex = "\\s*public final (String|int|boolean) (equals|hashCode|toString)\\((Object .+?)?\\) \\{\\R\\s*return this\\.(equals|hashCode|toString)<invokedynamic>\\(this(, object)?\\);\\R\\s*}".toRegex()
 
 fun String.convertRecord(): String {
     if (this.lines().all { !recordRegex.matches(it) }) return this
+    // class name: fields (field type: field name)
     val fields = mutableMapOf<String, MutableList<String>>()
-    val names = mutableListOf<String>()
+    val names = mutableSetOf<String>()
     this.lines().forEach { s ->
         if (recordRegex.matches(s)) {
             recordRegex.find(s)?.groupValues?.get(2)?.let { names.add(it) } ?: System.err.println("Failed to find class name from line: $s")
             fields[names.last()] = mutableListOf()
         }
         if (!s.contains("=") && fieldRegex.matches(s) && names.isNotEmpty()) {
-            fields[names.last()]!!.add(s.replace(fieldRegex, "$1 $2"))
+            fields[names.last()]!!.add(s.replace(fieldRegex, "$2 $3"))
         }
     }
     var s = this.replace(uselessMethodRegex)
+    // transform class into record (final class $cn extends Record -> record $cn) and remove constructor
     names.forEach { cn ->
-        s = s.replace("final class $cn extends Record", "record $cn(${fields[cn]!!.joinToString(", ")})")
-            .replace("\\s*public $cn\\(.+?\\)\\s?\\{[\\s\\S]+?}".toRegex())
+        val ctorParams = fields[cn]!!.joinToString(" .+?, ") { Pattern.quote(it.split("\\s+".toRegex())[0]) } + " .+?"
+        s = s.replace("\\s*((public|private) )?$cn\\($ctorParams\\)\\s?\\{[\\s\\S]+?}".toRegex())
+            .replace("final class $cn extends Record", "record $cn(${fields[cn]!!.joinToString(", ")})")
     }
     fields.values.forEach {
         it.forEach { field ->
             s = s.replace("\\s*public ${Pattern.quote(field)}\\(\\)\\s?\\{[\\s\\S]+?}".toRegex())
-                .replace("\\s*private final ${Pattern.quote(field)};".toRegex())
+                .replace("\\s*(private )?final ${Pattern.quote(field)};".toRegex())
         }
     }
     return s
