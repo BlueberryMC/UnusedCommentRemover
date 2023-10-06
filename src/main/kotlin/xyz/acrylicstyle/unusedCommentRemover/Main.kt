@@ -89,7 +89,7 @@ fun String.convertCharacters() = this
     .replace("\ufffd", "\\ufffd") // 65533
     .replace("\u2603", "\\u2603") // 9731 // DirectoryLock.java
 
-val recordRegex = "(.*?)final class (.*?) extends Record(.*?)".toRegex()
+val recordRegex = "(.*?)(?:final class|record) (.*?)(?: extends Record|\\(.+?\\))(.*?)".toRegex()
 val fieldRegex = "(?!.*=.*)\\s*(private\\s+)?final (.*?) (.*?);".toRegex()
 val uselessMethodRegex = "\\s*public final (String|int|boolean) (equals|hashCode|toString)\\((Object .+?)?\\) \\{\\R\\s*return this\\.(equals|hashCode|toString)<invokedynamic>\\(this(, object)?\\);\\R\\s*}".toRegex()
 
@@ -111,8 +111,13 @@ fun String.convertRecord(): String {
     // transform class into record (final class $cn extends Record -> record $cn) and remove constructor
     names.forEach { cn ->
         val ctorParams = fields[cn]!!.joinToString(" .+?, ") { Pattern.quote(it.split("\\s+".toRegex())[0]) } + " .+?"
-        s = s.replace("\\s*((public|private) )?$cn\\($ctorParams\\)\\s?\\{[\\s\\S]+?}".toRegex())
-            .replace("final class $cn extends Record", "record $cn(${fields[cn]!!.joinToString(", ")})")
+        s = if (s.contains("(public )?(static )?record $cn\\(".toRegex())) {
+            s.replace("(\\s*)(public )?(?:static )?record $cn\\($ctorParams\\)".toRegex(), "$1$2record $cn(${fields[cn]!!.joinToString(", ")})")
+                .replace("\\s*((public|private) )?$cn\\($ctorParams\\)\\s?\\{\n\\s*this[\\s\\S]+?}".toRegex())
+        } else {
+            s.replace("\\s*((public|private) )?$cn\\($ctorParams\\)\\s?\\{[\\s\\S]+?}".toRegex())
+                .replace("final class $cn extends Record", "record $cn(${fields[cn]!!.joinToString(", ")})")
+        }
     }
     fields.values.forEach {
         it.forEach { field ->
